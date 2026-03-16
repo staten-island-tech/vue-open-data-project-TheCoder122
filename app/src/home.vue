@@ -9,9 +9,9 @@ import { onMounted, ref } from 'vue'
 const text = ref('')
 async function getdata() {
     try{
-        const response = await fetch('/api/hello')
+        const response = await fetch('https://data.cityofnewyork.us/resource/7479-ugqb.json')
         const data = await response.json()
-        text.value = data.message
+        text.value = data
     }
 }
 onMounted(() => {

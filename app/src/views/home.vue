@@ -4,6 +4,7 @@
     <div v-if="loading">Loading data...</div>
     <div v-else style="max-width: 800px; margin: 0 auto">
       <Bar :options="chartOptions" :data="chartData" />
+      <Bar :options="ageChartOptions" :data="ageChartData" style="margin-top: 48px" />
     </div>
   </div>
 </template>
@@ -84,13 +85,62 @@ const chartOptions = {
     y: {
       beginAtZero: true,
       title: { display: true, text: 'Number of Inmates' },
-      ticks: {
-        callback: (val) => val.toLocaleString(),
+      ticks: { callback: (val) => val.toLocaleString() },
+    },
+    x: { title: { display: true, text: 'Race' } },
+  },
+}
+const AGE_ORDER = ['16-20', '21-25', '26-30', '31-35', '36-40', '41-50', '51-60', '60+', 'Unknown']
+const ageCounts = computed(() => {
+  const counts = {}
+  for (const item of rawData.value) {
+    const age = item.age_group || item.agegrp || item.age || 'Unknown'
+    counts[age] = (counts[age] || 0) + 1
+  }
+  const entries = Object.entries(counts)
+  entries.sort((a, b) => {
+    const ai = AGE_ORDER.indexOf(a[0])
+    const bi = AGE_ORDER.indexOf(b[0])
+    if (ai !== -1 && bi !== -1) return ai - bi
+    if (ai !== -1) return -1
+    if (bi !== -1) return 1
+    return a[0].localeCompare(b[0])
+  })
+  return entries
+})
+const ageChartData = computed(() => ({
+  labels: ageCounts.value.map(([age]) => age),
+  datasets: [
+    {
+      label: 'Inmate Count',
+      data: ageCounts.value.map(([, count]) => count),
+      backgroundColor: '#4e79a7',
+      borderRadius: 4,
+    },
+  ],
+}))
+const ageChartOptions = {
+  responsive: true,
+  plugins: {
+    legend: { display: false },
+    title: {
+      display: true,
+      text: 'NYC Inmate Population by Age Group',
+      font: { size: 18 },
+    },
+    tooltip: {
+      callbacks: {
+        label: (ctx) => ` ${ctx.parsed.y.toLocaleString()} inmates`,
       },
     },
-    x: {
-      title: { display: true, text: 'Race' },
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      title: { display: true, text: 'Number of Inmates' },
+      ticks: { callback: (val) => val.toLocaleString() },
     },
+    x: { title: { display: true, text: 'Age Group' } },
   },
 }
 onMounted(() => getdata())

@@ -1,16 +1,32 @@
 <template>
-  <div>
-    <h1>Deadly Sentencing</h1>
-    <div v-if="loading">Loading data...</div>
-    <div v-else style="max-width: 800px; margin: 0 auto">
-      <Bar :options="chartOptions" :data="chartData" />
-      <Bar :options="ageChartOptions" :data="ageChartData" style="margin-top: 48px" />
+  <div :style="pageStyle">
+    <h1 style="color: white; text-align: center; padding-top: 10vh; margin: 0">
+      Deadly Sentencing
+    </h1>
+    <div v-if="loading" style="color: white; text-align: center">Loading data...</div>
+    <div
+      v-else
+      style="
+        display: flex;
+        gap: 24px;
+        max-width: 900px;
+        margin: 0 auto;
+        padding-bottom: 40px;
+        align-items: flex-start;
+      "
+    >
+      <div style="flex: 1">
+        <Bar :options="chartOptions" :data="chartData" />
+      </div>
+      <div style="flex: 1">
+        <Doughnut :options="ageChartOptions" :data="ageChartData" />
+      </div>
     </div>
   </div>
 </template>
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { Bar } from 'vue-chartjs'
+import { Bar, Doughnut } from 'vue-chartjs'
 import {
   Chart as ChartJS,
   Title,
@@ -19,8 +35,17 @@ import {
   BarElement,
   CategoryScale,
   LinearScale,
+  ArcElement,
 } from 'chart.js'
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
+ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement)
+const pageStyle = {
+  minHeight: '100vh',
+  backgroundImage: 'url(/court.png)',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
+  backgroundAttachment: 'fixed',
+}
 const rawData = ref([])
 const loading = ref(true)
 async function getdata() {
@@ -36,6 +61,18 @@ async function getdata() {
     loading.value = false
   }
 }
+const COLORS = [
+  '#4e79a7',
+  '#f28e2b',
+  '#e15759',
+  '#76b7b2',
+  '#59a14f',
+  '#edc948',
+  '#b07aa1',
+  '#ff9da7',
+  '#9c755f',
+  '#bab0ac',
+]
 const raceCounts = computed(() => {
   const counts = {}
   for (const item of rawData.value) {
@@ -50,18 +87,7 @@ const chartData = computed(() => ({
     {
       label: 'Inmate Count',
       data: raceCounts.value.map(([, count]) => count),
-      backgroundColor: [
-        '#4e79a7',
-        '#f28e2b',
-        '#e15759',
-        '#76b7b2',
-        '#59a14f',
-        '#edc948',
-        '#b07aa1',
-        '#ff9da7',
-        '#9c755f',
-        '#bab0ac',
-      ],
+      backgroundColor: COLORS,
       borderRadius: 4,
     },
   ],
@@ -73,7 +99,8 @@ const chartOptions = {
     title: {
       display: true,
       text: 'NYC Inmate Population by Race',
-      font: { size: 18 },
+      font: { size: 14 },
+      color: 'white',
     },
     tooltip: {
       callbacks: {
@@ -84,10 +111,15 @@ const chartOptions = {
   scales: {
     y: {
       beginAtZero: true,
-      title: { display: true, text: 'Number of Inmates' },
-      ticks: { callback: (val) => val.toLocaleString() },
+      title: { display: true, text: 'Number of Inmates', color: 'white' },
+      ticks: { callback: (val) => val.toLocaleString(), color: 'white' },
+      grid: { color: 'rgba(255,255,255,0.2)' },
     },
-    x: { title: { display: true, text: 'Race' } },
+    x: {
+      title: { display: true, text: 'Race', color: 'white' },
+      ticks: { color: 'white' },
+      grid: { color: 'rgba(255,255,255,0.2)' },
+    },
   },
 }
 const AGE_ORDER = ['16-20', '21-25', '26-30', '31-35', '36-40', '41-50', '51-60', '60+', 'Unknown']
@@ -114,33 +146,35 @@ const ageChartData = computed(() => ({
     {
       label: 'Inmate Count',
       data: ageCounts.value.map(([, count]) => count),
-      backgroundColor: '#4e79a7',
-      borderRadius: 4,
+      backgroundColor: COLORS,
+      borderWidth: 2,
     },
   ],
 }))
 const ageChartOptions = {
   responsive: true,
   plugins: {
-    legend: { display: false },
+    legend: {
+      display: true,
+      position: 'bottom',
+      labels: {
+        color: 'white',
+        boxWidth: 12,
+        font: { size: 10 },
+      },
+    },
     title: {
       display: true,
       text: 'NYC Inmate Population by Age Group',
-      font: { size: 18 },
+      font: { size: 14 },
+      color: 'white',
+      padding: { bottom: 10 },
     },
     tooltip: {
       callbacks: {
-        label: (ctx) => ` ${ctx.parsed.y.toLocaleString()} inmates`,
+        label: (ctx) => ` ${ctx.parsed.toLocaleString()} inmates`,
       },
     },
-  },
-  scales: {
-    y: {
-      beginAtZero: true,
-      title: { display: true, text: 'Number of Inmates' },
-      ticks: { callback: (val) => val.toLocaleString() },
-    },
-    x: { title: { display: true, text: 'Age Group' } },
   },
 }
 onMounted(() => getdata())

@@ -1,7 +1,11 @@
 <template>
-  <div style="display: flex; gap: 24px">
-    <Bar :data="chartData" :options="chartOptions" />
-    <Doughnut :data="ageChartData" :options="ageChartOptions" />
+  <div style="display: flex; gap: 24px; max-width: 900px; margin: 0 auto">
+    <div style="flex: 1">
+      <Bar :data="chartData" :options="chartOptions" />
+    </div>
+    <div style="flex: 1">
+      <Doughnut :data="ageChartData" :options="ageChartOptions" />
+    </div>
   </div>
 </template>
 <script setup>
@@ -24,7 +28,7 @@ const props = defineProps({
     required: true,
   },
 })
-const COLORS = ['#4e79a7', '#f28e2b', '#e15759']
+const COLORS = ['#4e79a7', '#f28e2b', '#e15759', '#76b7b2']
 const raceCounts = computed(() => {
   const counts = {}
   for (const item of props.rawData) {
@@ -37,6 +41,7 @@ const chartData = computed(() => ({
   labels: raceCounts.value.map(([r]) => r),
   datasets: [
     {
+      label: 'Inmate Count',
       data: raceCounts.value.map(([, c]) => c),
       backgroundColor: COLORS,
     },
@@ -55,6 +60,7 @@ const ageChartData = computed(() => ({
   labels: ageCounts.value.map(([a]) => a),
   datasets: [
     {
+      label: 'Inmate Count',
       data: ageCounts.value.map(([, c]) => c),
       backgroundColor: COLORS,
     },
@@ -62,3 +68,4 @@ const ageChartData = computed(() => ({
 }))
 const ageChartOptions = { responsive: true }
 </script>
+
